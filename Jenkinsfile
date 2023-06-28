@@ -16,11 +16,20 @@ pipeline {
                 sh './jenkins/scripts/test.sh'
             }
         }
-        stage('Deploy') { 
+        stage('Manual Approval') {
             steps {
-                sh './jenkins/scripts/deliver.sh' 
-                input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)' 
-                sh './jenkins/scripts/kill.sh' 
+                input message: 'Lanjutkan ke tahap Deploy?', ok: 'Proceed', submitter: 'user'
+            }
+        }
+        stage('Deploy') {
+            when {
+                expression {
+                    return currentBuild.result != 'ABORTED'
+                }
+            }
+            steps {
+                sh './jenkins/scripts/deliver.sh'
+                sh './jenkins/scripts/kill.sh'
             }
         }
     }
